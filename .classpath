@@ -7,7 +7,5 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/soot"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soot-infoflow"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soot-infoflow-android"/>
-	<classpathentry kind="lib" path="libs/android19_core_no_stub.jar"/>
-	<classpathentry kind="lib" path="libs/android19_framework_no_stub.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
