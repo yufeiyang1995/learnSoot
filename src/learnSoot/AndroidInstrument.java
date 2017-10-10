@@ -1,5 +1,6 @@
 package learnSoot;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -20,9 +21,13 @@ import soot.jimple.InvokeStmt;
 import soot.jimple.Jimple;
 import soot.jimple.StringConstant;
 import soot.options.Options;
+import util.SignApk;
+import util.Util;
 
 
 public class AndroidInstrument {
+	
+	private static boolean DEBUG = false;
 	
 	public static void main(String[] args) {
 		
@@ -81,6 +86,19 @@ public class AndroidInstrument {
 		}));
 		
 		soot.Main.main(args);
+		Util pathUtil = new Util();
+		if(DEBUG){
+			for(int i = 0;i < args.length;i++){
+				System.out.println("ARGS: " + args[i]);
+			}
+			System.out.println("apk:" + pathUtil.getApk(args[3]));
+		}
+		
+		String sootOutApk = "sootOutput" + File.separator + pathUtil.getApk(args[3]);
+		System.out.println("SOOTOUTAPK: " + sootOutApk);
+		SignApk signApk = new SignApk();
+		signApk.signApk(sootOutApk);
+		
 	}
 
     private static Local addTmpRef(Body body)
