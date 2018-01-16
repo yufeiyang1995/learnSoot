@@ -1,43 +1,108 @@
 package learnSoot;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Map;
+
+import soot.ArrayType;
+import soot.Body;
+import soot.BodyTransformer;
+import soot.G;
+import soot.Local;
 import soot.PackManager;
+import soot.Printer;
+import soot.RefType;
 import soot.Scene;
+import soot.SootClass;
+import soot.SootMethod;
+import soot.SourceLocator;
 import soot.Transform;
-import soot.jimple.infoflow.android.SetupApplication;
-import soot.jimple.infoflow.source.data.NullSourceSinkDefinitionProvider;
+import soot.Type;
+import soot.VoidType;
+import soot.jimple.JasminClass;
+import soot.jimple.Jimple;
+import soot.jimple.JimpleBody;
+import soot.jimple.StringConstant;
 import soot.options.Options;
+import soot.toolkits.graph.ExceptionalUnitGraph;
+import soot.util.Chain;
+import soot.util.JasminOutputStream;
 
 public class Main {
-	public static void main(String[] args) {
-		String apkPath = args[0];
-		String AndroidJarPath = args[1];
-		initialSoot(apkPath,AndroidJarPath);
-		
-		//PackManager.v().getPack("jtp").add(new Transform("jtp.myAnalysis", new MyAnalysis()));
-	}
-	
-	public static void initialSoot(String apkPath,String androidJarPath){
-		Options.v().set_allow_phantom_refs(true);
-        Options.v().set_prepend_classpath(true);
-        Options.v().set_validate(true);
 
-//        Options.v().set_output_format(Options.output_format_jimple);
-        Options.v().set_output_format(Options.output_format_dex);
-        
-        List<String> processDir = new ArrayList<String>();
-        processDir.add(apkPath);
-        //processDir.add("/additionalAppClassesBin");
-        
-        Options.v().set_process_dir(processDir);
-        
-        Options.v().set_force_android_jar(androidJarPath);
-        Options.v().set_src_prec(Options.src_prec_apk);
-        Options.v().set_soot_classpath(androidJarPath);
-        Scene.v().loadNecessaryClasses();
-        PackManager.v().runPacks();
+	public static void main(String[] args) {
+	
+		SootClass sClass;
+		SootMethod method;
+		
+		//Resolve dependencies
+		Scene.v().loadClassAndSupport("java.lang.Object");
+		Scene.v().loadClassAndSupport("java.lang.System");
+		
+		//Declare 'public class HelloWorld'
+		sClass = new SootClass("HelloWorld", Modifier.PUBLIC);
+		
+		//extends Object
+		sClass.setSuperclass(Scene.v().getSootClass("java.lang.Object"));
+		Scene.v().addClass(sClass);
+		
+		//Create the method,public static void main(String[])
+		method=new SootMethod("main",Arrays.asList(new Type[]{ArrayType.v(RefType.v("java.lang.String"), 1)}),
+				VoidType.v(),Modifier.PUBLIC|Modifier.STATIC);
+		
+		sClass.addMethod(method);
+		
+		//Create the method body
+		{
+			//create emtpy body
+			JimpleBody body = Jimple.v().newBody(method);
+			method.setActiveBody(body);
+			Chain units = body.getUnits();
+			Local arg,tmpRef;
+			
+			//Add some locals,java.lang.String l0
+			arg = Jimple.v().newLocal("l0", ArrayType.v(RefType.v("java.lang.String"), 1));
+			body.getLocals().add(arg);
+			
+			//Add locals,java.io.printStream tmpRef
+			tmpRef = Jimple.v().newLocal("tmpRef", RefType.v("java.io.PrintStream"));
+			body.getLocals().add(tmpRef);
+			
+			//add "l0=@parameter0"
+			units.add(Jimple.v().newIdentityStmt(arg,
+					Jimple.v().newParameterRef(ArrayType.v(RefType.v("java.lang.String"), 1), 0)));
+			
+			//add "tmpRef = java.lang.System.out"
+			units.add(Jimple.v().newAssignStmt(tmpRef, Jimple.v().newStaticFieldRef(
+					Scene.v().getField("<java.lang.System: java.io.PrintStream out>").makeRef())));
+			
+			//insert "tmpRef.println("Hello world!")"
+			{
+				SootMethod toCall = Scene.v().getMethod("<java.io.PrintStream: void println(java.lang.String)>");
+				units.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(tmpRef, toCall.makeRef(),StringConstant.v("Hello World!"))));
+				
+			}
+			
+			//insert "return"
+			units.add(Jimple.v().newReturnVoidStmt());
+		}
+		
+		try {
+			String fileName = SourceLocator.v().getFileNameFor(sClass, Options.output_format_jimple);
+			OutputStream streamOut = new FileOutputStream(fileName);
+			PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
+			Printer.v().printTo(sClass, writerOut);
+			writerOut.flush();
+			streamOut.close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }

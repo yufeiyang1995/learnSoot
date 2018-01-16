@@ -1,0 +1,7 @@
+[2018-01-16 19:15:05.521] INFO LocalLog ClassLoader: specialinvoke $r2.<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>($r1, $r11, null, $r12)
+[2018-01-16 19:15:05.525] INFO LocalLog ClassLoader Args: $r1
+[2018-01-16 19:15:06.097] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void setGravity(int,int,int)>(8388661, $i0, $i1)
+[2018-01-16 19:15:06.098] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void show()>()
+[2018-01-16 19:15:06.098] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void setGravity(int,int,int)>(81, 0, $i1)
+[2018-01-16 19:15:06.229] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void setGravity(int,int,int)>(49, $i2, $i1)
+[2018-01-16 19:15:06.229] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void show()>()
