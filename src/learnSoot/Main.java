@@ -1,5 +1,6 @@
 package learnSoot;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -7,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 
 import soot.ArrayType;
@@ -15,6 +17,7 @@ import soot.BodyTransformer;
 import soot.G;
 import soot.Local;
 import soot.PackManager;
+import soot.PatchingChain;
 import soot.Printer;
 import soot.RefType;
 import soot.Scene;
@@ -23,7 +26,11 @@ import soot.SootMethod;
 import soot.SourceLocator;
 import soot.Transform;
 import soot.Type;
+import soot.Unit;
 import soot.VoidType;
+import soot.jimple.AbstractStmtSwitch;
+import soot.jimple.InvokeExpr;
+import soot.jimple.InvokeStmt;
 import soot.jimple.JasminClass;
 import soot.jimple.Jimple;
 import soot.jimple.JimpleBody;
@@ -32,77 +39,101 @@ import soot.options.Options;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.util.Chain;
 import soot.util.JasminOutputStream;
+import util.Logger;
+import util.LoggerFactory;
+import util.SignApk;
+import util.Util;
 
 public class Main {
 
-	public static void main(String[] args) {
+private static boolean DEBUG = false;
 	
-		SootClass sClass;
-		SootMethod method;
+	public static void main(String[] args) throws FileNotFoundException {
+		Logger logger = LoggerFactory.getLogger("LocalLog","Log/log.txt");
 		
-		//Resolve dependencies
-		Scene.v().loadClassAndSupport("java.lang.Object");
-		Scene.v().loadClassAndSupport("java.lang.System");
+		//prefer Android APK files// -src-prec apk
+		Options.v().set_src_prec(Options.src_prec_apk);
 		
-		//Declare 'public class HelloWorld'
-		sClass = new SootClass("HelloWorld", Modifier.PUBLIC);
+		//output as APK, too//-f J
+		Options.v().set_output_format(Options.output_format_dex);
 		
-		//extends Object
-		sClass.setSuperclass(Scene.v().getSootClass("java.lang.Object"));
-		Scene.v().addClass(sClass);
-		
-		//Create the method,public static void main(String[])
-		method=new SootMethod("main",Arrays.asList(new Type[]{ArrayType.v(RefType.v("java.lang.String"), 1)}),
-				VoidType.v(),Modifier.PUBLIC|Modifier.STATIC);
-		
-		sClass.addMethod(method);
-		
-		//Create the method body
-		{
-			//create emtpy body
-			JimpleBody body = Jimple.v().newBody(method);
-			method.setActiveBody(body);
-			Chain units = body.getUnits();
-			Local arg,tmpRef;
-			
-			//Add some locals,java.lang.String l0
-			arg = Jimple.v().newLocal("l0", ArrayType.v(RefType.v("java.lang.String"), 1));
-			body.getLocals().add(arg);
-			
-			//Add locals,java.io.printStream tmpRef
-			tmpRef = Jimple.v().newLocal("tmpRef", RefType.v("java.io.PrintStream"));
-			body.getLocals().add(tmpRef);
-			
-			//add "l0=@parameter0"
-			units.add(Jimple.v().newIdentityStmt(arg,
-					Jimple.v().newParameterRef(ArrayType.v(RefType.v("java.lang.String"), 1), 0)));
-			
-			//add "tmpRef = java.lang.System.out"
-			units.add(Jimple.v().newAssignStmt(tmpRef, Jimple.v().newStaticFieldRef(
-					Scene.v().getField("<java.lang.System: java.io.PrintStream out>").makeRef())));
-			
-			//insert "tmpRef.println("Hello world!")"
-			{
-				SootMethod toCall = Scene.v().getMethod("<java.io.PrintStream: void println(java.lang.String)>");
-				units.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(tmpRef, toCall.makeRef(),StringConstant.v("Hello World!"))));
+        // resolve the PrintStream and System soot-classes
+		Scene.v().addBasicClass("java.io.PrintStream",SootClass.SIGNATURES);
+        Scene.v().addBasicClass("java.lang.System",SootClass.SIGNATURES);
+
+        PackManager.v().getPack("jtp").add(new Transform("jtp.myInstrumenter", new BodyTransformer() {
+
+			@Override
+			protected void internalTransform(final Body b, String phaseName, @SuppressWarnings("rawtypes") Map options) {
+				final PatchingChain<Unit> units = b.getUnits();
 				
+				//important to use snapshotIterator here
+				for(Iterator<Unit> iter = units.snapshotIterator(); iter.hasNext();) {
+					final Unit u = iter.next();
+					u.apply(new AbstractStmtSwitch() {
+						
+						public void caseInvokeStmt(InvokeStmt stmt) {
+							InvokeExpr invokeExpr = stmt.getInvokeExpr();
+							if(invokeExpr.getMethod().toString().contains("dalvik.system.DexClassLoader")) {
+								//System.out.println("InvokeExpr: " + invokeExpr);
+								logger.info("ClassLoader: " + invokeExpr);
+								Local tmpRef = addTmpRef(b);
+								Local tmpString = addTmpString(b);
+								
+								  // insert "tmpRef = java.lang.System.out;" 
+						        units.insertBefore(Jimple.v().newAssignStmt( 
+						                      tmpRef, Jimple.v().newStaticFieldRef( 
+						                      Scene.v().getField("<java.lang.System: java.io.PrintStream out>").makeRef())), u);
+
+						        // insert "tmpLong = 'HELLO';" 
+						        units.insertBefore(Jimple.v().newAssignStmt(tmpString, 
+						                      StringConstant.v("HELLO")), u);
+						        
+						        // insert "tmpRef.println(tmpString);" 
+						        SootMethod toCall = Scene.v().getSootClass("java.io.PrintStream").getMethod("void println(java.lang.String)");                    
+						        units.insertBefore(Jimple.v().newInvokeStmt(
+						                      Jimple.v().newVirtualInvokeExpr(tmpRef, toCall.makeRef(), tmpString)), u);
+						        
+						        //check that we did not mess up the Jimple
+						        b.validate();
+							}
+						}
+						
+					});
+				}
 			}
-			
-			//insert "return"
-			units.add(Jimple.v().newReturnVoidStmt());
+
+
+		}));
+		
+		soot.Main.main(args);
+		Util pathUtil = new Util();
+		if(DEBUG){
+			for(int i = 0;i < args.length;i++){
+				System.out.println("ARGS: " + args[i]);
+			}
+			System.out.println("apk:" + pathUtil.getApk(args[3]));
 		}
 		
-		try {
-			String fileName = SourceLocator.v().getFileNameFor(sClass, Options.output_format_jimple);
-			OutputStream streamOut = new FileOutputStream(fileName);
-			PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
-			Printer.v().printTo(sClass, writerOut);
-			writerOut.flush();
-			streamOut.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		String sootOutApk = "sootOutput" + File.separator + pathUtil.getApk(args[3]);
+		System.out.println("SOOTOUTAPK: " + sootOutApk);
+		SignApk signApk = new SignApk();
+		signApk.signApk(sootOutApk);
 		
 	}
+
+    private static Local addTmpRef(Body body)
+    {
+        Local tmpRef = Jimple.v().newLocal("tmpRef", RefType.v("java.io.PrintStream"));
+        body.getLocals().add(tmpRef);
+        return tmpRef;
+    }
+    
+    private static Local addTmpString(Body body)
+    {
+        Local tmpString = Jimple.v().newLocal("tmpString", RefType.v("java.lang.String")); 
+        body.getLocals().add(tmpString);
+        return tmpString;
+    }
+
 }
