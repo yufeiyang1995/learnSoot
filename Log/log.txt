@@ -1,7 +1,11 @@
-[2018-01-16 22:55:08.984] INFO LocalLog ClassLoader: specialinvoke $r2.<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>($r1, $r11, null, $r12)
-[2018-01-16 22:55:08.987] INFO LocalLog ClassLoader Args: $r1
-[2018-01-16 22:55:09.489] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void setGravity(int,int,int)>(8388661, $i0, $i1)
-[2018-01-16 22:55:09.489] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void show()>()
-[2018-01-16 22:55:09.489] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void setGravity(int,int,int)>(81, 0, $i1)
-[2018-01-16 22:55:09.632] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void setGravity(int,int,int)>(49, $i2, $i1)
-[2018-01-16 22:55:09.632] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void show()>()
+[2018-01-18 20:09:34.314] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void show()>()
+[2018-01-18 20:09:34.318] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void show()>()
+[2018-01-18 20:09:34.995] INFO LocalLog ClassLoader: specialinvoke $r2.<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>($r1, $r4, null, $r5)
+[2018-01-18 20:09:34.995] INFO LocalLog ClassLoader Args: $r1
+[2018-01-18 20:09:35.393] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void setGravity(int,int,int)>(8388661, $i2, $i3)
+[2018-01-18 20:09:35.393] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void show()>()
+[2018-01-18 20:09:35.393] INFO LocalLog Toast: virtualinvoke $r9.<android.widget.Toast: void setGravity(int,int,int)>(81, 0, $i3)
+[2018-01-18 20:09:35.599] INFO LocalLog Toast: virtualinvoke $r3.<android.widget.Toast: void show()>()
+[2018-01-18 20:09:35.604] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void setGravity(int,int,int)>(49, $i0, $i2)
+[2018-01-18 20:09:35.605] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void show()>()
+[2018-01-18 20:09:35.941] INFO LocalLog Toast: virtualinvoke $r8.<android.widget.Toast: void show()>()

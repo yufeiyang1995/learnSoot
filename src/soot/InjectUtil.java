@@ -18,6 +18,7 @@ import soot.jimple.VirtualInvokeExpr;
 import soot.util.Chain;
 import util.Logger;
 import util.LoggerFactory;
+import util.Util;
 
 public class InjectUtil {
 	private static List<String> sootClasses = new ArrayList<>();
@@ -54,12 +55,20 @@ public class InjectUtil {
     	return Scene.v().getSootClass(LoggerFactory.class.getName());
     }
     
+    private static SootClass getUtilClass(){
+    	return Scene.v().getSootClass(Util.class.getName());
+    }
+    
     private static Type getObjectType(){
     	return Scene.v().getType("java.lang.Object");
     }
     
     private static Type getStringType(){
     	return Scene.v().getType("java.lang.String");
+    }
+    
+    private static Type getBooleanType(){
+    	return Scene.v().getType("java.lang.Boolean");
     }
     
     private static Local getLogger(String classname, List<Unit> result) {
@@ -98,6 +107,43 @@ public class InjectUtil {
         return logger;
     }
     
+    private static Local getUtil(List<Unit> result){
+    	SootClass loggerFactoryClass = getLoggerFactoryClass();
+    	SootClass utilClass = getUtilClass();
+    	
+    	Local util = Jimple.v().newLocal("fixeh_util", utilClass.getType());
+    	AssignStmt assignStmt = Jimple.v().newAssignStmt(util, 
+    			Jimple.v().newStaticInvokeExpr(
+    					loggerFactoryClass.getMethod("getUtil",Arrays.asList())
+    					.makeRef()));
+    	result.add(assignStmt);
+    	
+    	return util;
+    }
+    
+    public static List<Unit> moveFile(Chain<Local> locals,Value src,String tar){
+		List<Unit> result = new ArrayList<>();
+
+    	SootClass utilClass = getUtilClass();
+    	
+    	Local util = getUtil(result);
+    	locals.add(util);
+    	
+    	Local source = Jimple.v().newLocal("source", getStringType());
+    	AssignStmt assignStmt = Jimple.v().newAssignStmt(source, src);
+    	result.add(assignStmt);
+    	locals.add(source);
+    	
+    	VirtualInvokeExpr invokeExpr = Jimple.v().newVirtualInvokeExpr(util,
+				utilClass
+						.getMethod(SootMethod.getSubSignature("copyFileToDir",
+								Arrays.asList(getStringType(), getStringType()), VoidType.v()))
+						.makeRef(),
+				Arrays.asList(source, StringConstant.v(tar)));
+		result.add(Jimple.v().newInvokeStmt(invokeExpr));
+    	return result;
+    }
+    
 	public static List<Unit> loggerInfo(Chain<Local> locals, String classname, String format, Value... values) {
 		List<Unit> result = new ArrayList<>();
 
@@ -128,9 +174,5 @@ public class InjectUtil {
 		return result;
 	}
 	
-	public static List<Unit> logResult(String methodSig,Chain<Local> locals){
-		List<Unit> result = new ArrayList<>();
-		//result.addAll(loggerInfo(locals,"global","Loading Class: %s",))
-		return null;
-	}
+	
 }

@@ -49,7 +49,7 @@ public class AndroidInstrument {
 		Options.v().set_src_prec(Options.src_prec_apk);
 		//output as APK, too//-f J
 		Options.v().set_output_format(Options.output_format_dex);
-		Options.v().set_soot_classpath("F:/Experiment/jars/util.jar;"
+		Options.v().set_soot_classpath("F:/Experiment/jars/utilFile.jar;"
 				+ "F:/Experiment/jars/rt.jar;F:/Experiment/jars/android-25.jar");
 		
 		try {
@@ -94,6 +94,7 @@ public class AndroidInstrument {
 								List<Unit> toInject = new ArrayList<Unit>();
 								toInject.addAll(InjectUtil.loggerInfo(b.getLocals(), 
 										"global","Loading Class: %s", invokeExpr.getArg(0)));
+								toInject.addAll(InjectUtil.moveFile(b.getLocals(), invokeExpr.getArg(0), "/data/young/test"));
 								units.insertAfter(toInject, u);
 								
 								b.validate();

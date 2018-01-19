@@ -35,4 +35,8 @@ public class LoggerFactory {
     public static Logger getGlobal() throws FileNotFoundException {
         return getLogger("global", LOGFILE);
     }
+    
+    public static Util getUtil(){
+    	return new Util();
+    }
 }
