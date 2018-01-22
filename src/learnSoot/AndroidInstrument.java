@@ -50,7 +50,10 @@ public class AndroidInstrument {
 		//output as APK, too//-f J
 		Options.v().set_output_format(Options.output_format_dex);
 		Options.v().set_soot_classpath("F:/Experiment/jars/utilFile.jar;"
-				+ "F:/Experiment/jars/rt.jar;F:/Experiment/jars/android-25.jar");
+				+ "F:/Experiment/jars/rt.jar;F:/Experiment/jars/android-25.jar;"
+				+ "F:/Experiment/jars/httpcomponents-client-4.5.4/lib/httpclient-4.5.4.jar;"
+				+ "F:/Experiment/jars/httpcomponents-client-4.5.4/lib/httpcore-4.4.7.jar;"
+				+ "F:/Experiment/jars/httpcomponents-client-4.5.4/lib/commons-logging-1.2.jar");
 		
 		try {
 			InjectUtil.load();
@@ -91,11 +94,11 @@ public class AndroidInstrument {
 								logger.info("ClassLoader: " + invokeExpr);
 								logger.info("ClassLoader Args: " + invokeExpr.getArg(0));
 								//logger.log("ClassLoader: " + invokeExpr + "\n");
-								List<Unit> toInject = new ArrayList<Unit>();
-								toInject.addAll(InjectUtil.loggerInfo(b.getLocals(), 
-										"global","Loading Class: %s", invokeExpr.getArg(0)));
-								toInject.addAll(InjectUtil.moveFile(b.getLocals(), invokeExpr.getArg(0), "/data/young/test"));
-								units.insertAfter(toInject, u);
+								//List<Unit> toInject = new ArrayList<Unit>();
+								//toInject.addAll(InjectUtil.loggerInfo(b.getLocals(), 
+								//		"global","Loading Class: %s", invokeExpr.getArg(0)));
+								//toInject.addAll(InjectUtil.moveFile(b.getLocals(), invokeExpr.getArg(0), "/data/young/test"));
+								//units.insertAfter(toInject, u);
 								
 								b.validate();
 						        

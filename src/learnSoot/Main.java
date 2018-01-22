@@ -74,6 +74,7 @@ private static boolean DEBUG = false;
 						
 						public void caseInvokeStmt(InvokeStmt stmt) {
 							InvokeExpr invokeExpr = stmt.getInvokeExpr();
+							/*
 							if(invokeExpr.getMethod().toString().contains("dalvik.system.DexClassLoader")) {
 								//System.out.println("InvokeExpr: " + invokeExpr);
 								logger.info("ClassLoader: " + invokeExpr);
@@ -96,7 +97,7 @@ private static boolean DEBUG = false;
 						        
 						        //check that we did not mess up the Jimple
 						        b.validate();
-							}
+							}*/
 						}
 						
 					});
