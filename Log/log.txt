@@ -1,3 +1,0 @@
-[2018-01-21 19:46:24.990] INFO LocalLog ClassLoader: specialinvoke $r8.<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>($r6, $r7, null, $r9)
-[2018-01-21 19:46:25.009] INFO LocalLog ClassLoader: specialinvoke $r8.<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>($r6, $r7, null, $r9)
-[2018-01-21 19:46:25.011] INFO LocalLog ClassLoader: specialinvoke $r8.<dalvik.system.DexClassLoader: void <init>(java.lang.String,java.lang.String,java.lang.String,java.lang.ClassLoader)>($r6, $r7, null, $r9)

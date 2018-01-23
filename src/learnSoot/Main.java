@@ -56,6 +56,14 @@ private static boolean DEBUG = false;
 		
 		//output as APK, too//-f J
 		Options.v().set_output_format(Options.output_format_dex);
+		Options.v().set_allow_phantom_refs(true);
+        Options.v().set_process_multiple_dex(true);
+		Options.v().set_soot_classpath(
+				"F:/Experiment/jars/rt.jar;F:/Experiment/jars/android-25.jar;"
+				+ "F:/Experiment/jars/httpcomponents-client-4.5.4/lib/httpclient-4.5.4.jar;"
+				+ "F:/Experiment/jars/httpcomponents-client-4.5.4/lib/httpcore-4.4.7.jar;"
+				+ "F:/Experiment/jars/httpcomponents-client-4.5.4/lib/commons-logging-1.2.jar");
+		//Options.v().set_android_api_version(23);
 		
         // resolve the PrintStream and System soot-classes
 		Scene.v().addBasicClass("java.io.PrintStream",SootClass.SIGNATURES);
@@ -74,6 +82,7 @@ private static boolean DEBUG = false;
 						
 						public void caseInvokeStmt(InvokeStmt stmt) {
 							InvokeExpr invokeExpr = stmt.getInvokeExpr();
+							/*
 							if(invokeExpr.getMethod().toString().contains("dalvik.system.DexClassLoader")) {
 								//System.out.println("InvokeExpr: " + invokeExpr);
 								logger.info("ClassLoader: " + invokeExpr);
@@ -96,7 +105,7 @@ private static boolean DEBUG = false;
 						        
 						        //check that we did not mess up the Jimple
 						        b.validate();
-							}
+							}*/
 						}
 						
 					});
